@@ -1,19 +1,17 @@
 import React, { Component } from 'react';
 import Dimapur from "../../images/Dimapur.svg";
-import db from "../../DataStore/db";
+// import db from "../../DataStore/db";
 import BootstrapTable from 'react-bootstrap-table-next';
 import './Create.css';
 import paginationFactory from 'react-bootstrap-table2-paginator';
 import {Button} from "react-bootstrap";
-import AlertNotification from "../../components/AlertNotification";
-import my from "../../DataStore/my";
-import {withRouter} from 'react-router-dom';
-
+import axios from "../../axios-constituency";
 class Create extends Component {
 
     constructor(props) {
         super(props)
         this.state = {
+            dbData: undefined,
             tableData: [],
             villageIds: [],
             totalVillages: 0,
@@ -24,14 +22,42 @@ class Create extends Component {
             totalLothaPopulation: 0,
             totalOthers: 0,
             error: false,
-            circle: undefined
+            circle: undefined,
+            applicationError: false,
+            totalCreated: 0
         }
     }
+
+    componentDidMount() {
+      axios.get('https://create-constituencies-default-rtdb.firebaseio.com/db.json').then(
+          response => {
+            console.log(response.data);
+              this.setState({
+                dbData: response.data
+              });
+          }
+      ).catch(error => { this.setState((preState) => ({
+        applicationError: true
+      })) });
+      axios.get('https://create-constituencies-default-rtdb.firebaseio.com/my.json').then(
+          response => {
+            let tmp = [];
+            for(var i in response.data){
+              tmp.push(response.data[i]);
+            }
+              this.setState({
+                totalCreated: response.data.length
+              });
+          }
+      ).catch(error => { this.setState((preState) => ({
+        applicationError: true
+      })) });
+  }
 
     isValidSelectionInclusion = (row) => {
       let arr = [...this.state.villageIds, row["Id"]];
       let usedCircles =  new Set();
-      let tmp = db.filter((ele)=> {
+      let tmp = this.state.dbData.filter((ele)=> {
         return arr.includes(ele["Id"]);
       });
       tmp.forEach(ele => usedCircles.add(ele["Circle"]));
@@ -45,7 +71,7 @@ class Create extends Component {
         arr.splice(index, 1);
       }
       let usedCircles =  new Set();
-      let tmp = db.filter((ele)=> {
+      let tmp = this.state.dbData.filter((ele)=> {
         return arr.includes(ele["Id"]);
       });
       tmp.forEach(ele => usedCircles.add(ele["Circle"]));
@@ -104,7 +130,7 @@ class Create extends Component {
     }
 
     filterTableData = (cirle) => {
-        const arr  = db.filter((ele) => {
+        const arr  = this.state.dbData.filter((ele) => {
             return ele["Circle"] === cirle && ele["isSelected"] === "FALSE";
         });
         arr.sort((ele1, ele2) => {
@@ -189,9 +215,14 @@ class Create extends Component {
         hidePageListOnlyOnePage: true
       };
 
+      async function updateAPI(url) {
+        const response = await axios.patch(url, {"isSelected": "TRUE"});
+        console.log(response)
+        console.log(response.data)
+      }
       const create = () => {
         let obj = {};
-        obj["Id"] = my.length + 1;
+        obj["Id"] = this.state.totalCreated + 1;
         obj["Total Villages"] = this.state.totalVillages;
         obj["Total Population"] = this.state.totalPopulation;
         obj["Total Ao Population"] = this.state.totalAoPopulation;
@@ -199,14 +230,23 @@ class Create extends Component {
         obj["Total Teny Population"] = this.state.totalTenyPopulation;
         obj["Total Lotha Population"] = this.state.totalLothaPopulation;
         obj["Total Others"] = this.state.totalOthers;
-        my.push(obj);
+        // my.push(obj);
         let selectedVillages = [...this.state.villageIds];
-        db.forEach((ele) => {
-          if(selectedVillages.includes(ele["Id"]))
-            ele["isSelected"] = "TRUE";
+        this.state.dbData.forEach((ele) => {
+          if(selectedVillages.includes(ele["Id"])){
+            var id = parseInt(ele["Id"])-1
+            var url = "https://create-constituencies-default-rtdb.firebaseio.com/db/" + id.toString() + ".json/";
+            updateAPI(url);
+          }
         });
-        this.nextPath('/home');
-       
+
+        axios.post('/my.json', obj).then(response => {
+            console.log("Created Successfully");
+            this.nextPath('/home');
+        }).catch(error => {
+            //console.log(error);
+            this.setState({ loading: false, purchasing: false });
+        });
       }
 
       const totalTableData = [

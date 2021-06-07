@@ -1,8 +1,32 @@
 import React, { Component } from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
-import my from "../../DataStore/my";
-import  "./Home.css"
+import  "./Home.css";
+import axios from "../../axios-constituency";
 class Home extends Component {
+
+  constructor(props) {
+    super(props)
+    this.state = {
+        tableData: undefined
+    }
+}
+
+componentDidMount() {
+  axios.get('https://create-constituencies-default-rtdb.firebaseio.com/my.json').then(
+      response => {
+        let tmp = [];
+        for(var i in response.data){
+          tmp.push(response.data[i]);
+        }
+        console.log(response.data);
+          this.setState({
+            tableData: tmp
+          });
+      }
+  ).catch(error => { this.setState((preState) => ({
+    applicationError: true
+  })) });
+}
 
     columnsTotal = [{
         dataField: 'Id',
@@ -45,7 +69,7 @@ class Home extends Component {
                       hover
                       condensed
                       keyField='Id'
-                      data={ my }
+                      data={ this.state.tableData ?this.state.tableData : [] }
                       columns={ this.columnsTotal }
                   />
             </div>
