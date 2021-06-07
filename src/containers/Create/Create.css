@@ -1,0 +1,26 @@
+area:hover{
+background-color: gray;
+cursor: pointer;
+}
+
+.float-container {
+    border: 3px solid #fff;
+    padding: 20px;
+    font-size: 0.8rem;
+}
+.float-child.map {
+    width: 40%;
+    float: left;
+    padding: 20px;
+}  
+
+.float-child.table {
+    width: 60%;
+    float: left;
+    padding: 20px;
+}  
+
+.actions-btn {
+    float: right;
+    display: inline-block ;
+}
