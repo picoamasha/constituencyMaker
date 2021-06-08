@@ -2,12 +2,15 @@ import React, { Component } from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import  "./Home.css";
 import axios from "../../axios-constituency";
+import paginationFactory from 'react-bootstrap-table2-paginator';
 class Home extends Component {
 
   constructor(props) {
     super(props)
     this.state = {
-        tableData: undefined
+        tableData: undefined,
+        selectedIds: [],
+        mapKeyId: {}
     }
 }
 
@@ -58,16 +61,36 @@ componentDidMount() {
         text: 'Total Other Population',
       }];
 
+      handleOnSelect = (row, isSelect) => {
+
+      }
+
+      selectRow = {
+        mode: 'checkbox',
+        clickToSelect: true,
+        onSelect: this.handleOnSelect,
+        hideSelectAll: true
+      };
+
     render() {
+
+      const options = {
+        sizePerPage: 10,
+        hideSizePerPage: true,
+        hidePageListOnlyOnePage: true
+      };
 
         return (
             <div>
                 <h3 className="home-heading">Constituencies</h3>
                 
                 <BootstrapTable
+                      pagination={ paginationFactory(options) }
+                      selectRow={ this.selectRow }
                       noDataIndication="Table is Empty. Please create Constituencies from the create page."
                       hover
                       condensed
+                      striped
                       keyField='Id'
                       data={ this.state.tableData ?this.state.tableData : [] }
                       columns={ this.columnsTotal }
