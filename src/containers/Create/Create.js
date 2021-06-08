@@ -24,7 +24,6 @@ class Create extends Component {
             error: false,
             circle: undefined,
             applicationError: false,
-            totalCreated: 0
         }
     }
 
@@ -34,19 +33,6 @@ class Create extends Component {
             console.log(response.data);
               this.setState({
                 dbData: response.data
-              });
-          }
-      ).catch(error => { this.setState((preState) => ({
-        applicationError: true
-      })) });
-      axios.get('https://create-constituencies-default-rtdb.firebaseio.com/my.json').then(
-          response => {
-            let tmp = [];
-            for(var i in response.data){
-              tmp.push(response.data[i]);
-            }
-              this.setState({
-                totalCreated: tmp.length
               });
           }
       ).catch(error => { this.setState((preState) => ({
@@ -237,7 +223,7 @@ class Create extends Component {
       }
       const create = () => {
         let obj = {};
-        obj["Id"] = this.state.totalCreated + 1;
+        obj["Id"] = Math.ceil(Math.random() * 1000000000000);
         obj["Total Villages"] = this.state.totalVillages;
         obj["Total Population"] = this.state.totalPopulation;
         obj["Total Ao Population"] = this.state.totalAoPopulation;
