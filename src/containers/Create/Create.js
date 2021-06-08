@@ -55,16 +55,16 @@ class Create extends Component {
   }
 
   componentDidUpdate() {
-    axios.get('https://create-constituencies-default-rtdb.firebaseio.com/db.json').then(
-          response => {
-            console.log(response.data);
-              this.setState({
-                dbData: response.data
-              });
-          }
-      ).catch(error => { this.setState((preState) => ({
-        applicationError: true
-      })) });
+    // axios.get('https://create-constituencies-default-rtdb.firebaseio.com/db.json').then(
+    //       response => {
+    //         console.log(response.data);
+    //           this.setState({
+    //             dbData: response.data
+    //           });
+    //       }
+    //   ).catch(error => { this.setState((preState) => ({
+    //     applicationError: true
+    //   })) });
   }
 
     isValidSelectionInclusion = (row) => {

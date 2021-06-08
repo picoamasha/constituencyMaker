@@ -3,6 +3,7 @@ import BootstrapTable from 'react-bootstrap-table-next';
 import  "./Home.css";
 import axios from "../../axios-constituency";
 import paginationFactory from 'react-bootstrap-table2-paginator';
+import {Button} from "react-bootstrap";
 class Home extends Component {
 
   constructor(props) {
@@ -95,6 +96,9 @@ componentDidMount() {
                       data={ this.state.tableData ?this.state.tableData : [] }
                       columns={ this.columnsTotal }
                   />
+                  <div className="delete-btn">
+                    <Button ariant="primary" >Delete Constituencies</Button>
+                  </div>
             </div>
         );
     }

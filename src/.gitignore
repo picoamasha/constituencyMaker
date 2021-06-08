@@ -1,0 +1,43 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+junit.xml
+
+# Compiled binary addons (http://nodejs.org/api/addons.html)
+build/Release
+build/
+
+# Dependency directories
+node_modules
+jspm_packages
+
+# Optional npm cache directory
+.npm
+.idea
+
+# VS Code files
+.vscode/
+
+# Packaging
+dist/
+
+coverage/
+
+# uitest
+uitest/config.uitest.json
+uitest/DONOTCHECKIN.env
+uitest/Screenshots
+uitest/Logs
+uitest/build
+/codegen
+
+# cache loader
+.cache-loader/
+
+.DS_STORE
+
+# Schema Generated Files
+src/assets/schema/meta-schema-module.ts
+src/assets/schema/meta-schema.d.ts
+solutions-hub-solutions/
