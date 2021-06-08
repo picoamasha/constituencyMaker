@@ -143,6 +143,7 @@ class Create extends Component {
     }
 
     filterTableData = (cirle) => {
+      if(this.state.dbData){
         const arr  = this.state.dbData.filter((ele) => {
             return ele["Circle"] === cirle && ele["isSelected"] === "FALSE";
         });
@@ -151,6 +152,7 @@ class Create extends Component {
         });
         // console.log(arr);
         this.setState({tableData: [...arr], circle: cirle});
+      }
         this.node.paginationContext.currPage = 1;
         
     }
@@ -243,6 +245,7 @@ class Create extends Component {
         obj["Total Teny Population"] = this.state.totalTenyPopulation;
         obj["Total Lotha Population"] = this.state.totalLothaPopulation;
         obj["Total Others"] = this.state.totalOthers;
+        obj["Villages Selected"] = this.state.villageIds;
         // my.push(obj);
         let selectedVillages = [...this.state.villageIds];
         this.state.dbData.forEach((ele) => {
@@ -295,6 +298,7 @@ class Create extends Component {
                     this.state.circle && <h3> Selected Circle - {this.state.circle} </h3>
                   }
                   <BootstrapTable
+                      tabIndexCell
                       pagination={ paginationFactory(options) }
                       ref={(n) => (this.node = n)}
                       noDataIndication="Table is Empty. Please select a Circle from the map on the left."

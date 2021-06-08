@@ -11,21 +11,38 @@ class Home extends Component {
     this.state = {
         tableData: undefined,
         selectedIds: [],
-        mapKeyId: {}
+        mapKeyId: {},
+        applicationError: undefined
     }
+}
+
+transformTable = (data) => {
+  let transformedData = [...data];
+  let counter = 1;
+
+  transformedData.forEach((obj)=>{
+    obj["Number"] = counter;
+    counter+=1;
+  });
+
+  return transformedData;
 }
 
 componentDidMount() {
   axios.get('https://create-constituencies-default-rtdb.firebaseio.com/my.json').then(
       response => {
         let tmp = [];
-        for(var i in response.data){
+        let tmpMap = {};
+        for(var i in response.data)
           tmp.push(response.data[i]);
-        }
-        console.log(response.data);
+        Object.keys(response.data).forEach((key)=>{
+          tmpMap[response.data[key]["Id"]] = key;
+        });
           this.setState({
-            tableData: tmp
+            tableData: this.transformTable(tmp),
+            mapKeyId: tmpMap
           });
+        console.log(this.state.mapKeyId);
       }
   ).catch(error => { this.setState((preState) => ({
     applicationError: true
@@ -33,9 +50,10 @@ componentDidMount() {
 }
 
     columnsTotal = [{
-        dataField: 'Id',
-        text: 'Id',
-      }, {
+      dataField: 'Number',
+      text: 'No.'
+      },  
+      {
         dataField: 'Total Villages',
         text: 'Total Villages',
       }, {
@@ -62,8 +80,31 @@ componentDidMount() {
         text: 'Total Other Population',
       }];
 
-      handleOnSelect = (row, isSelect) => {
+      returnNewIDs = (arr, id) => {
+        let newArr = [...arr];
+        const index = newArr.indexOf(id);
+        if (index > -1) {
+          newArr.splice(index, 1);
+        }
+        return newArr;
+      }
 
+      handleOnSelect = (row, isSelect) => {
+        if(isSelect){
+          this.setState((prevState) => ({
+            selectedIds: [...prevState.selectedIds, row["Id"]]
+          }));
+        }
+        else{
+          let newArr = [...this.state.selectedIds];
+          const index = newArr.indexOf(row["Id"]);
+          if (index > -1) {
+            newArr.splice(index, 1);
+          }
+          this.setState((prevState) => ({
+            selectedIds: newArr
+          }));
+        }
       }
 
       selectRow = {
@@ -75,8 +116,64 @@ componentDidMount() {
 
     render() {
 
+      async function updateAPI(url) {
+        const response = await axios.patch(url, {"isSelected": "FALSE"});
+        console.log(response.data)
+      }
+
+      async function deleteAPI(url) {
+        const response = await axios.delete(url);
+        console.log(response)
+        console.log(response.data)
+      }
+
+      const deleteData = () => {
+        let arrIds = [...this.state.selectedIds];
+        let villageIds = [];
+        axios.get('https://create-constituencies-default-rtdb.firebaseio.com/my.json').then(
+          response => {
+            for(var i in response.data){
+              if(arrIds.includes(response.data[i]["Id"])){
+                villageIds = [...villageIds, ...response.data[i]["Villages Selected"]]
+              }
+            }
+            console.log(villageIds);
+            villageIds.forEach((ele)=>{
+              let id = parseInt(ele)-1;
+              var url = "https://create-constituencies-default-rtdb.firebaseio.com/db/" + id.toString() + ".json/";
+              updateAPI(url);
+            });
+
+          }
+        ).catch(error => { this.setState((preState) => ({
+          applicationError: true
+        })) });
+
+        let mapKeyIds = {...this.state.mapKeyId};
+        console.log(mapKeyIds);
+
+        arrIds.forEach((id) => {
+          var url = "https://create-constituencies-default-rtdb.firebaseio.com/my/" + mapKeyIds[id] + ".json";
+          console.log(url);
+          deleteAPI(url);
+        });
+
+        let oldTabData = [...this.state.tableData];
+        let newTabData = [];
+        oldTabData.forEach((obj)=>{
+          if(!arrIds.includes(obj["Id"]))
+            newTabData.push(obj);
+        });
+        this.setState((prevState)=> ({
+          tableData: this.transformTable(newTabData),
+          selectedIds: []
+        }))
+        // setTimeout(window.location.reload(), 2000);
+
+      }
+
       const options = {
-        sizePerPage: 10,
+        sizePerPage: 8,
         hideSizePerPage: true,
         hidePageListOnlyOnePage: true
       };
@@ -97,7 +194,7 @@ componentDidMount() {
                       columns={ this.columnsTotal }
                   />
                   <div className="delete-btn">
-                    <Button ariant="primary" >Delete Constituencies</Button>
+                    <Button ariant="primary" onClick={()=>deleteData()} disabled={this.state.selectedIds.length === 0}>Delete Constituencies</Button>
                   </div>
             </div>
         );
