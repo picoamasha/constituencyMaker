@@ -4,6 +4,8 @@ import  "./Home.css";
 import axios from "../../axios-constituency";
 import paginationFactory from 'react-bootstrap-table2-paginator';
 import {Button} from "react-bootstrap";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 class Home extends Component {
 
   constructor(props) {
@@ -42,7 +44,7 @@ componentDidMount() {
             tableData: this.transformTable(tmp),
             mapKeyId: tmpMap
           });
-        console.log(this.state.mapKeyId);
+        console.log(this.state.tableData);
       }
   ).catch(error => { this.setState((preState) => ({
     applicationError: true
@@ -52,7 +54,10 @@ componentDidMount() {
     columnsTotal = [{
       dataField: 'Number',
       text: 'No.'
-      },  
+      }, {
+        dataField: 'Name',
+        text: 'Constituency Name',
+      },
       {
         dataField: 'Total Villages',
         text: 'Total Villages',
@@ -172,6 +177,36 @@ componentDidMount() {
 
       }
 
+      const exportAsPDF = () => {
+        const unit = "pt";
+        const size = "A4"; // Use A1, A2, A3 or A4
+        const orientation = "portrait"; // portrait or landscape
+
+        const marginLeft = 40;
+        const doc = new jsPDF(orientation, unit, size);
+
+        doc.setFontSize(15);
+
+        const title = "Constituencies";
+        const headers = [['S. No.','Name', 'Total Villages', 'Village Names' , 'Total Population','Total Ao Population','Total Sema Population','Total Teny Population', 'Total Lotha Population','Total Others']];
+        // const headers = [["NAME", "PROFESSION"]];
+
+        // const data = this.state.people.map(elt=> [elt.name, elt.profession]);
+        const data = this.state.tableData.map(row => {
+          return [row['Number'], row['Name'], row['Total Villages'], row['Villages Name Selected']?.toString(), row['Total Population'], row['Total Ao Population'], row['Total Sema Population'], row['Total Teny Population'], row['Total Lotha Population'],row['Total Others']];
+        })
+
+        let content = {
+          startY: 50,
+          head: headers,
+          body: data
+        };
+
+        doc.text(title, marginLeft, 40);
+        doc.autoTable(content);
+        doc.save("report.pdf")
+      };
+
       const options = {
         sizePerPage: 8,
         hideSizePerPage: true,
@@ -180,7 +215,10 @@ componentDidMount() {
 
         return (
             <div>
-                <h3 className="home-heading">Constituencies</h3>
+                <div className="home-top">
+                  <h3 className="home-heading">Constituencies</h3>
+                  <Button variant="primary" onClick={exportAsPDF} disabled={this.state.tableData?.length === 0}>Export as PDF</Button>
+                </div>
                 
                 <BootstrapTable
                       pagination={ paginationFactory(options) }
@@ -194,7 +232,7 @@ componentDidMount() {
                       columns={ this.columnsTotal }
                   />
                   <div className="delete-btn">
-                    <Button ariant="primary" onClick={()=>deleteData()} disabled={this.state.selectedIds.length === 0}>Delete Constituencies</Button>
+                    <Button variant="primary" onClick={()=>deleteData()} disabled={this.state.selectedIds.length === 0}>Delete Constituencies</Button>
                   </div>
             </div>
         );
