@@ -1,9 +1,17 @@
-.home-heading {
-    margin-top: 20px;
-    margin-bottom: 10px;
-}
 
 .delete-btn {
     margin-right: 100px;
     float: right;
 }
+
+.home-top {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    display: flex;
+}
+
+.home-top button {
+    margin-left: auto;
+    order: 2;
+    margin-right: 100px;
+} 

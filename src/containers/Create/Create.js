@@ -6,6 +6,7 @@ import './Create.css';
 import paginationFactory from 'react-bootstrap-table2-paginator';
 import {Button} from "react-bootstrap";
 import axios from "../../axios-constituency";
+import {  Redirect } from "react-router-dom";
 class Create extends Component {
 
     constructor(props) {
@@ -14,6 +15,7 @@ class Create extends Component {
             dbData: undefined,
             tableData: [],
             villageIds: [],
+            villageNames: [],
             totalVillages: 0,
             totalPopulation: 0,
             totalAoPopulation: 0,
@@ -24,6 +26,7 @@ class Create extends Component {
             error: false,
             circle: undefined,
             applicationError: false,
+            redirect: false
         }
     }
 
@@ -92,6 +95,7 @@ class Create extends Component {
         if(this.isValidSelectionInclusion(row)){
           this.setState((prevState) => ({
             villageIds: [...prevState.villageIds, row["Id"]],
+            villageNames: [...prevState.villageNames, row["Location name"]],
             totalVillages: prevState.totalVillages + 1,
             totalPopulation: prevState.totalPopulation + parseInt(row["Total population"]),
             totalAoPopulation: prevState.totalAoPopulation + parseInt(row["Ao population"]),
@@ -112,6 +116,7 @@ class Create extends Component {
       } else {
         this.setState((prevState) => ({
             villageIds: this.returnNewIDs(prevState.villageIds, row["Id"]),
+            villageNames: this.returnNewIDs(prevState.villageNames, row["Id"]),
             totalVillages: prevState.totalVillages - 1,
             totalPopulation: prevState.totalPopulation - parseInt(row["Total population"]),
             totalAoPopulation: prevState.totalAoPopulation - parseInt(row["Ao population"]),
@@ -216,39 +221,48 @@ class Create extends Component {
         hidePageListOnlyOnePage: true
       };
 
+      if (this.state.redirect) {
+        return <Redirect to='/home'/>;
+      }
+
       async function updateAPI(url) {
         const response = await axios.patch(url, {"isSelected": "TRUE"});
         console.log(response)
         console.log(response.data)
       }
-      const create = () => {
-        let obj = {};
-        obj["Id"] = Math.ceil(Math.random() * 1000000000000);
-        obj["Total Villages"] = this.state.totalVillages;
-        obj["Total Population"] = this.state.totalPopulation;
-        obj["Total Ao Population"] = this.state.totalAoPopulation;
-        obj["Total Sema Population"] = this.state.totalSemaPopulation;
-        obj["Total Teny Population"] = this.state.totalTenyPopulation;
-        obj["Total Lotha Population"] = this.state.totalLothaPopulation;
-        obj["Total Others"] = this.state.totalOthers;
-        obj["Villages Selected"] = this.state.villageIds;
-        // my.push(obj);
-        let selectedVillages = [...this.state.villageIds];
-        this.state.dbData.forEach((ele) => {
-          if(selectedVillages.includes(ele["Id"])){
-            var id = parseInt(ele["Id"])-1
-            var url = "https://create-constituencies-default-rtdb.firebaseio.com/db/" + id.toString() + ".json/";
-            updateAPI(url);
-          }
-        });
+      const create = (event) => {
+          console.log(event)
+          event.preventDefault();
+          let obj = {};
+          obj["Id"] = Math.ceil(Math.random() * 1000000000000);
+          obj["Name"] = event.target[0].value;
+          obj["Total Villages"] = this.state.totalVillages;
+          obj["Total Population"] = this.state.totalPopulation;
+          obj["Total Ao Population"] = this.state.totalAoPopulation;
+          obj["Total Sema Population"] = this.state.totalSemaPopulation;
+          obj["Total Teny Population"] = this.state.totalTenyPopulation;
+          obj["Total Lotha Population"] = this.state.totalLothaPopulation;
+          obj["Total Others"] = this.state.totalOthers;
+          obj["Villages Selected"] = this.state.villageIds;
+          obj["Villages Name Selected"] = this.state.villageNames;
 
-        axios.post('/my.json', obj).then(response => {
-            console.log("Created Successfully");
-            this.nextPath('/home');
-        }).catch(error => {
-            //console.log(error);
-            this.setState({ loading: false, purchasing: false });
-        });
+          // my.push(obj);
+          let selectedVillages = [...this.state.villageIds];
+          this.state.dbData.forEach((ele) => {
+            if(selectedVillages.includes(ele["Id"])){
+              var id = parseInt(ele["Id"])-1
+              var url = "https://create-constituencies-default-rtdb.firebaseio.com/db/" + id.toString() + ".json/";
+              updateAPI(url);
+            }
+          });
+
+          axios.post('/my.json', obj).then(response => {
+              console.log("Created Successfully");
+              this.setState({redirect: true});
+          }).catch(error => {
+              //console.log(error);
+              this.setState({ loading: false });
+          });
       }
 
       const totalTableData = [
@@ -296,24 +310,27 @@ class Create extends Component {
                       columns={ this.columns }
                       selectRow={ this.selectRow }
                   />
-                  { this.state.villageIds.length > 0 && 
-                  <BootstrapTable
-                      noDataIndication="Table is Empty. Please select villages from the table."
-                      hover
-                      condensed
-                      keyField='Id'
-                      data={ totalTableData }
-                      columns={ this.columnsTotal }
-                  />
+                  { this.state.villageIds.length > 0 &&
+                  <form onSubmit={create}>
+                    <div className="control">
+                      <label htmlFor='name'>Constituency Name</label>
+                      <input placeholder="Please enter a Constituency Name" required type='text' id='name' />
+                    </div>
+                    <BootstrapTable
+                        noDataIndication="Table is Empty. Please select villages from the table."
+                        hover
+                        condensed
+                        keyField='Id'
+                        data={ totalTableData }
+                        columns={ this.columnsTotal }
+                    />
+                    <div className="actions-btn">
+                      <Button type="submit" variant="primary" disabled={this.state.villageIds.length === 0}>Create Constituency</Button>
+                    </div>
+                  </form>
                   }
-                  <div className="actions-btn">
-                    <Button  onClick={()=> create()} variant="primary" disabled={this.state.villageIds.length === 0}>Create Constituency</Button>
-                  </div>
                 </div>
             </div>
-            {/* {
-                  this.state.error && <AlertNotification show={true}/>
-            } */}
           </>
         );
     }
