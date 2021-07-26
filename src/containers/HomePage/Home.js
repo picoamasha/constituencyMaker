@@ -217,7 +217,7 @@ componentDidMount() {
             <div>
                 <div className="home-top">
                   <h3 className="home-heading">Constituencies</h3>
-                  <Button variant="primary" onClick={exportAsPDF} disabled={this.state.tableData?.length === 0}>Export as PDF</Button>
+                  <Button variant="primary" onClick={exportAsPDF} disabled={!this.state.tableData ||  this.state.tableData?.length === 0}>Export as PDF</Button>
                 </div>
                 
                 <BootstrapTable

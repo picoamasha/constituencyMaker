@@ -34,7 +34,7 @@ const LoginForm = () => {
             let errorMessage  = "Authentication Error";
             if(data && data.error && data.error.message)
               errorMessage = data.error.message;
-            throw new Error(errorMessage);
+            alert(errorMessage);
           });
         }
       }).then((data) => { 
@@ -58,7 +58,7 @@ const LoginForm = () => {
         </div>
         <div className={classes.control}>
           <label htmlFor='password'>Password</label>
-          <input  minLength="7" ref={passwordRef} type='password' id='password' required />
+          <input  minLength="8" ref={passwordRef} type='password' id='password' required />
         </div>
         <div className={classes.actions}>
           <button>Login</button>

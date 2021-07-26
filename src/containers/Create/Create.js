@@ -231,37 +231,38 @@ class Create extends Component {
         console.log(response.data)
       }
       const create = (event) => {
-        event.preventDefault();
-        let obj = {};
-        obj["Id"] = Math.ceil(Math.random() * 1000000000000);
-        obj["Name"] = event.target[0].value;
-        obj["Total Villages"] = this.state.totalVillages;
-        obj["Total Population"] = this.state.totalPopulation;
-        obj["Total Ao Population"] = this.state.totalAoPopulation;
-        obj["Total Sema Population"] = this.state.totalSemaPopulation;
-        obj["Total Teny Population"] = this.state.totalTenyPopulation;
-        obj["Total Lotha Population"] = this.state.totalLothaPopulation;
-        obj["Total Others"] = this.state.totalOthers;
-        obj["Villages Selected"] = this.state.villageIds;
-        obj["Villages Name Selected"] = this.state.villageNames;
+          console.log(event)
+          event.preventDefault();
+          let obj = {};
+          obj["Id"] = Math.ceil(Math.random() * 1000000000000);
+          obj["Name"] = event.target[0].value;
+          obj["Total Villages"] = this.state.totalVillages;
+          obj["Total Population"] = this.state.totalPopulation;
+          obj["Total Ao Population"] = this.state.totalAoPopulation;
+          obj["Total Sema Population"] = this.state.totalSemaPopulation;
+          obj["Total Teny Population"] = this.state.totalTenyPopulation;
+          obj["Total Lotha Population"] = this.state.totalLothaPopulation;
+          obj["Total Others"] = this.state.totalOthers;
+          obj["Villages Selected"] = this.state.villageIds;
+          obj["Villages Name Selected"] = this.state.villageNames;
 
-        // my.push(obj);
-        let selectedVillages = [...this.state.villageIds];
-        this.state.dbData.forEach((ele) => {
-          if(selectedVillages.includes(ele["Id"])){
-            var id = parseInt(ele["Id"])-1
-            var url = "https://create-constituencies-default-rtdb.firebaseio.com/db/" + id.toString() + ".json/";
-            updateAPI(url);
-          }
-        });
+          // my.push(obj);
+          let selectedVillages = [...this.state.villageIds];
+          this.state.dbData.forEach((ele) => {
+            if(selectedVillages.includes(ele["Id"])){
+              var id = parseInt(ele["Id"])-1
+              var url = "https://create-constituencies-default-rtdb.firebaseio.com/db/" + id.toString() + ".json/";
+              updateAPI(url);
+            }
+          });
 
-        axios.post('/my.json', obj).then(response => {
-            console.log("Created Successfully");
-            this.setState({redirect: true});
-        }).catch(error => {
-            //console.log(error);
-            this.setState({ loading: false });
-        });
+          axios.post('/my.json', obj).then(response => {
+              console.log("Created Successfully");
+              this.setState({redirect: true});
+          }).catch(error => {
+              //console.log(error);
+              this.setState({ loading: false });
+          });
       }
 
       const totalTableData = [
